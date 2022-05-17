@@ -6,7 +6,7 @@ class WordCluster:
         @param debug_mode: bool If true prints will be shonw
         """
         self.list_of_strings = list_of_strings
-        self.threshold_for_clustering = threshold_for_clustering-1 # 0 = 1 char
+        self.threshold_for_clustering = threshold_for_clustering
         self.cluster_categories = None # will be calculated
         self.categorized_words = None # will be calculated
         self.debug_mode = debug_mode
@@ -33,7 +33,8 @@ class WordCluster:
                 return None
         return str_intersected
 
-    def remove_blanks(self, x): return x.replace(" ","")
+    def remove_blanks(self, x): 
+        return x.replace(" ","") if x is not None else x
 
     def intersection_exists_and_more_than_treshold(self, x, y):
         if self.str_intersection(x, y, False) is not None:
@@ -46,33 +47,11 @@ class WordCluster:
         else:
            return False
 
-
     def find_cluster_categories(self):
         MYLIST = self.list_of_strings
-        # Finding Clusters
-        threshold_for_clustering = self.threshold_for_clustering
-        seed_words=MYLIST.copy()
-        
-        for x in MYLIST:
-            for y in seed_words:
-                try:
-                    # If these words are same pass
-                    if x == y:
-                        pass
-                    else:
-                        if self.intersection_exists_and_more_than_treshold(x,y):
-                                self.log(f"{x},{y}", level = 2)
-                                # then check whether this word in the seed_words
-                                for seed in seed_words:
-                                    self.log(f"--->{seed}")
-                                    if self.str_intersection(x, seed, False) != None:
-                                        self.log(f"----->Seed word removed: {seed}", level = 3)
-                                        seed_words.remove(x)
-                                    if self.str_intersection(y, seed, False) != None:
-                                        seed_words.remove(y)
-                                        self.log(f"----->Seed word removed: {seed}", level = 3)
-                except:
-                    pass
+        initial_seed_words = [item[0:self.threshold_for_clustering] for item in MYLIST]
+        #cleaned_from_shorts = [x if len(x)>self.threshold_for_clustering else None for x in initial_seed_words]
+        seed_words=set(initial_seed_words) # initial cluster list
         seed_words = [self.remove_blanks(sw) for sw in seed_words]
         self.cluster_categories = seed_words
         return seed_words
@@ -82,20 +61,16 @@ class WordCluster:
         @word: str
         @cluster_categories: set
         """
-        seed_words = cluster_categories
+        seed_words = cluster_categories.copy()
         self.log(f"Seed words: {seed_words}")
-        for cluster in seed_words:
-            try:
-                self.log(f"{word}-vs-{cluster}")
-                if word == cluster:
-                    return cluster
-                else:
-                    if self.intersection_exists_and_more_than_treshold(word, cluster):
-                        return cluster
-                    else:
-                        return None
-            except:
-                return None
+        rt = ''
+        for seed in seed_words:
+            self.log(f"Whether {word} is in the category ~{seed}")
+            if seed in word:
+                rt= seed
+            else:
+                pass
+        return rt
 
     def categorize_all_words(self, cluster_categories):
         """
