@@ -11,7 +11,7 @@ else:
 
 setup(
     name='wordcluster',
-    version='0.1.0',
+    version='0.1.1',
     description='A algoirthm for clustering similar words in a list',
     long_description=long_description,
     python_requires='>=3.6',
